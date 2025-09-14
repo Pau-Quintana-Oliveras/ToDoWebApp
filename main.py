@@ -21,7 +21,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# --- Plantilles ---
+# --- Templates ---
 templates = Jinja2Templates(directory="templates")
 
 # --- Model ---
@@ -30,7 +30,7 @@ class Task(BaseModel):
     deadline: Optional[date] = None
     completed: bool = False
 
-# --- Persistència en JSON ---
+# --- JSON Persistance ---
 DB_FILE = "tasks.json"
 
 def load_tasks() -> List[Task]:
@@ -54,17 +54,17 @@ def save_tasks(tasks: List[Task]):
         os.fsync(f.fileno())
     os.replace(tmp_file, DB_FILE)
 
-# Carregar tasques inicials
+# Load initial Tasks
 tasks: List[Task] = load_tasks()
 
 # --- Endpoints REST ---
 @app.post("/tasks", response_model=Task)
 def add_task(task: Task):
     if not task.title.strip():
-        raise HTTPException(status_code=400, detail="El títol és obligatori")
+        raise HTTPException(status_code=400, detail="Title is mandatory")
     for t in tasks:
         if t.title == task.title and t.deadline == task.deadline:
-            raise HTTPException(status_code=400, detail="Aquesta tasca ja existeix")
+            raise HTTPException(status_code=400, detail="This task alredy exists")
     tasks.append(task)
     save_tasks(tasks)
     return task
@@ -82,7 +82,7 @@ def complete_task(title: str):
             t.completed = True
             save_tasks(tasks)
             return t
-    raise HTTPException(status_code=404, detail="Tasca no trobada")
+    raise HTTPException(status_code=404, detail="Task not found")
 
 @app.put("/tasks/{title}/uncomplete", response_model=Task)
 def uncomplete_task(title: str):
@@ -91,7 +91,7 @@ def uncomplete_task(title: str):
             t.completed = False
             save_tasks(tasks)
             return t
-    raise HTTPException(status_code=404, detail="Tasca no trobada")
+    raise HTTPException(status_code=404, detail="Task not found")
 
 @app.get("/tasks/completed", response_model=List[Task])
 def get_completed_tasks():
