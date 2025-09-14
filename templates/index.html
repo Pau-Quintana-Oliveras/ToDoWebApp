@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+  <meta charset="UTF-8">
+  <title>To-Do List</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2rem; }
+    input, button { padding: 0.5rem; margin: 0.2rem; }
+    ul { list-style: none; padding: 0; }
+    li { margin: 0.3rem 0; }
+    .done { text-decoration: line-through; color: gray; }
+  </style>
+</head>
+<body>
+  <h1>✅ To-Do List</h1>
+
+  <h3>Afegir nova tasca</h3>
+  <input type="text" id="taskTitle" placeholder="Títol">
+  <input type="date" id="taskDeadline">
+  <button onclick="addTask()">Afegir</button>
+
+  <h3>Tasques</h3>
+  <ul id="taskList"></ul>
+
+  <script>
+    const API_URL = "";
+
+    async function loadTasks() {
+      const res = await fetch(`${API_URL}/tasks`);
+      const tasks = await res.json();
+      const list = document.getElementById("taskList");
+      list.innerHTML = "";
+      tasks.forEach(t => {
+        const li = document.createElement("li");
+        li.textContent = `${t.title} (límit: ${t.deadline || "—"})`;
+        if (t.completed) li.classList.add("done");
+
+        if (!t.completed) {
+          const btn = document.createElement("button");
+          btn.textContent = "Completar";
+          btn.onclick = async () => {
+            await fetch(`${API_URL}/tasks/${encodeURIComponent(t.title)}`, { method: "PUT" });
+            loadTasks();
+          };
+          li.appendChild(btn);
+        }
+        list.appendChild(li);
+      });
+    }
+
+    async function addTask() {
+      const title = document.getElementById("taskTitle").value;
+      const deadline = document.getElementById("taskDeadline").value;
+      await fetch(`${API_URL}/tasks`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title, deadline: deadline || null })
+      });
+      document.getElementById("taskTitle").value = "";
+      document.getElementById("taskDeadline").value = "";
+      loadTasks();
+    }
+
+    loadTasks();
+  </script>
+</body>
+</html>
