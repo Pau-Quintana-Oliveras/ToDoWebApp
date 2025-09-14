@@ -2,14 +2,13 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel
 from typing import List, Optional
 from datetime import date
 import json
 import os
 import shutil
-from fastapi.encoders import jsonable_encoder
-
 
 app = FastAPI(title="To-Do List API")
 
@@ -31,7 +30,7 @@ class Task(BaseModel):
     deadline: Optional[date] = None
     completed: bool = False
 
-# --- Persistència robusta en JSON ---
+# --- Persistència en JSON ---
 DB_FILE = "tasks.json"
 
 def load_tasks() -> List[Task]:
@@ -76,7 +75,7 @@ def list_tasks(completed: Optional[bool] = None):
         return tasks
     return [t for t in tasks if t.completed == completed]
 
-@app.put("/tasks/{title}", response_model=Task)
+@app.put("/tasks/{title}/complete", response_model=Task)
 def complete_task(title: str):
     for t in tasks:
         if t.title == title:
@@ -84,6 +83,23 @@ def complete_task(title: str):
             save_tasks(tasks)
             return t
     raise HTTPException(status_code=404, detail="Tasca no trobada")
+
+@app.put("/tasks/{title}/uncomplete", response_model=Task)
+def uncomplete_task(title: str):
+    for t in tasks:
+        if t.title == title:
+            t.completed = False
+            save_tasks(tasks)
+            return t
+    raise HTTPException(status_code=404, detail="Tasca no trobada")
+
+@app.get("/tasks/completed", response_model=List[Task])
+def get_completed_tasks():
+    return [t for t in tasks if t.completed]
+
+@app.get("/tasks/pending", response_model=List[Task])
+def get_pending_tasks():
+    return [t for t in tasks if not t.completed]
 
 # --- Servir interfície web ---
 @app.get("/", response_class=HTMLResponse)
