@@ -19,6 +19,7 @@ Filtrar tasques:
 - Només completades
 
 Persistència en fitxer JSON.
+
 ---
 ## 🚀 Requeriments
 
@@ -40,8 +41,9 @@ pip install -r requirements.txt
 ```bash
 uvicorn main:app --reload
 ```     
-4.Obre al navegador:
+4. Obre al navegador:
 👉 http://127.0.0.1:8000
+
 ---
 📂 Estructura del projecte
 ```bash
