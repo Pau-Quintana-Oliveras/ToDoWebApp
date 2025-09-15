@@ -31,7 +31,7 @@ Persistència en fitxer JSON.
 1. Clona aquest repositori
 ```bash
 git clone <repo>
-cd todo-app
+cd ToDoWebApp
 ```
 2. Instal·la dependències
 ```bash
